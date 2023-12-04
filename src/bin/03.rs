@@ -18,9 +18,10 @@ pub fn part_one(input: &str) -> Option<u32> {
             if d.is_digit(10) && !checked {
                 if !get_neighbors(x, y, &array_2d).is_empty() {
                     checked = true;
+
                     r += get_number(x, y, &array_2d)
                 }
-            } else {
+            } else if !d.is_digit(10) {
                 checked = false;
             }
         }
