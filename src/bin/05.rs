@@ -68,7 +68,39 @@ fn get_seeds(input: &Vec<&str>) -> Vec<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let seeds_and_maps = input.split("\n\n");
+    let binding = seeds_and_maps.collect::<Vec<&str>>();
+
+    let seeds_to_soil_map = get_map(1, "seed-to-soil map:", &binding);
+    let soil_to_fertilizer_map = get_map(2, "soil-to-fertilizer map:", &binding);
+    let fertilizer_to_water_map = get_map(3, "fertilizer-to-water map:", &binding);
+    let water_to_light_map = get_map(4, "water-to-light map:", &binding);
+    let light_to_temperature_map = get_map(5, "light-to-temperature map:", &binding);
+    let temperature_to_humidity_map = get_map(6, "temperature-to-humidity map:", &binding);
+    let humidity_to_location_map = get_map(7, "humidity-to-location map:", &binding);
+    let seeds = get_seeds(&binding);
+
+    let mut res = 0;
+    for (i, seed_or_range) in seeds.iter().enumerate() {
+        if i % 2 == 0 {
+            let last = seed_or_range + seeds[i + 1];
+            for seed in *seed_or_range as usize..last as usize {
+                let mut tmp = seed.clone() as u64;
+                tmp = scan_map(tmp, &seeds_to_soil_map);
+                tmp = scan_map(tmp, &soil_to_fertilizer_map);
+                tmp = scan_map(tmp, &fertilizer_to_water_map);
+                tmp = scan_map(tmp, &water_to_light_map);
+                tmp = scan_map(tmp, &light_to_temperature_map);
+                tmp = scan_map(tmp, &temperature_to_humidity_map);
+                tmp = scan_map(tmp, &humidity_to_location_map);
+                if res == 0 || tmp < res {
+                    res = tmp
+                }
+            }
+        }
+    }
+
+    Some(res)
 }
 
 #[cfg(test)]
@@ -84,6 +116,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(46));
     }
 }
