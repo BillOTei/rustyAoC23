@@ -88,7 +88,7 @@ fn gcd(first: usize, second: usize) -> usize {
     }
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<usize> {
     let (map, instructions, start_nodes) = parse_map_2(input);
 
     let mut paths = HashMap::new();
@@ -109,13 +109,13 @@ pub fn part_two(input: &str) -> Option<u32> {
         paths.insert(node, path);
     }
 
-    Some((paths
+    Some(paths
         .values()
         .into_iter()
         .map(|v| v.len())
         .reduce(|a, b| lcm(a, b))
         .unwrap()
-        * instructions.len()) as u32)
+        * instructions.len())
 }
 
 #[cfg(test)]
