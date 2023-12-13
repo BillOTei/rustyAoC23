@@ -72,9 +72,9 @@ pub fn part_one(input: &str) -> Option<usize> {
     let mut visited = vec![];
     let mut prev = (101usize, 96usize); // Change that according to your input
     let starting_pipes = get_surrounding_pipes_start(prev.0, prev.1, &map); // it's a loop ! len == 2
-    let mut curr_x= starting_pipes[0].0;
-    let mut curr_y= starting_pipes[0].1;;
-    let mut curr_char= starting_pipes[0].2.clone();
+    let mut curr_x = starting_pipes[0].0;
+    let mut curr_y = starting_pipes[0].1;
+    let mut curr_char = starting_pipes[0].2.clone();
     visited.push((curr_x, curr_y, curr_char));
 
     while curr_char != 'S' {
