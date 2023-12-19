@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fmt::Display;
 use std::str::FromStr;
+use array2d::Array2D;
 
 /// A valid day number of advent (i.e. an integer in range 1 to 25).
 ///
@@ -88,6 +89,17 @@ pub fn all_days() -> AllDays {
 /// An iterator that yields every day of advent from the 1st to the 25th.
 pub struct AllDays {
     current: u8,
+}
+
+pub fn get_map(input: &str) -> Array2D<char> {
+    let rows: Vec<&str> = input.split("\n").collect();
+    let mut array = Vec::new();
+    for row in rows {
+        let row_vec: Vec<char> = row.chars().collect();
+        array.push(row_vec);
+    }
+
+    Array2D::from_rows(&array).unwrap()
 }
 
 impl AllDays {

@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use array2d::Array2D;
 use itertools::Itertools;
 use queues::*;
+use advent_of_code::get_map;
 
 advent_of_code::solution!(10);
 
@@ -125,17 +126,6 @@ fn get_surrounding_pipes_start(x: usize, y: usize, map: &Array2D<char>) -> Vec<(
     }
 
     r
-}
-
-fn get_map(input: &str) -> Array2D<char> {
-    let rows: Vec<&str> = input.split("\n").collect();
-    let mut array = Vec::new();
-    for row in rows {
-        let row_vec: Vec<char> = row.chars().collect();
-        array.push(row_vec);
-    }
-
-    Array2D::from_rows(&array).unwrap()
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
