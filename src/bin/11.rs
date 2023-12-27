@@ -7,7 +7,7 @@ use advent_of_code::get_map;
 advent_of_code::solution!(11);
 
 pub fn part_one(input: &str) -> Option<usize> {
-    let (expanded_map, _, _) = expand_map(input);
+    let (expanded_map, _, _) = expand_map(input, 1);
     let galaxies = get_galaxies(&expanded_map);
 
     // Get all combination paths
@@ -70,11 +70,9 @@ fn get_successors(array2d: &Array2D<char>, p: &(usize, usize)) -> Vec<((usize, u
     neighbors.iter().map(|&(x, y)| ((x, y), 1)).collect::<Vec<((usize, usize), u32)>>()
 }
 
-fn expand_map(input: &str) -> (Array2D<char>, Vec<usize>, Vec<usize>) {
+fn expand_map(input: &str, factor: u32) -> (Array2D<char>, Vec<usize>, Vec<usize>) {
     let raw_rows = input.split("\n").collect::<Vec<&str>>();
     let map = get_map(input);
-
-    let expansion_factor = 50;
 
     let mut rows_to_expand = vec![];
     let mut cols_to_expand = vec![];
@@ -99,17 +97,21 @@ fn expand_map(input: &str) -> (Array2D<char>, Vec<usize>, Vec<usize>) {
     for y in rows_to_expand.clone() {
         let mut prev = expanded_raw_rows[0..y + offset].to_vec();
         let next = expanded_raw_rows[y + offset..expanded_raw_rows.len()].to_vec();
-        prev.push(new_row.as_str());
+        for _ in 0..factor {
+            prev.push(new_row.as_str());
+        }
         expanded_raw_rows = vec![prev, next].concat();
-        offset += 1;
+        offset += 1 * factor as usize;
     }
     // Columns expansion
     let mut expanded_raw_columns = expanded_raw_rows.clone().iter().map(|&c| c.to_string()).collect::<Vec<String>>();
     for row in &mut expanded_raw_columns {
         let mut offset = 0;
         for x in cols_to_expand.clone() {
-            row.insert(x + offset, '.');
-            offset += 1;
+            for _ in 0..factor {
+                row.insert(x + offset, '.');
+            }
+            offset += 1 * factor as usize;
         }
     }
 
@@ -132,50 +134,47 @@ fn get_galaxies(map: &Array2D<char>) -> Vec<(usize, usize)> {
     galaxies
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
-    let (expanded_map, expanded_rows, expanded_cols) = expand_map(input);
-    let mut galaxies = get_galaxies(&expanded_map);
-    let expansion_factor = 5u64;
+pub fn part_two(input: &str) -> Option<i64> {
+    let map = get_map(input);
+    let columns = map.as_columns();
+    let mut galaxies = Vec::new();
+    let mut curr_row = 0;
+    let mut curr_col = 0;
+    let expansion = 1_000_000;
+    for row in map.as_rows() {
+        let r_iter = row.iter();
+        if r_iter.clone().filter(|&c| c == &'.').count() == row.len() {
+            curr_row += expansion;
+            continue;
+        }
+        for (x, c) in r_iter.enumerate() {
+            let col = &columns[x];
+            let c_iter = col.iter();
+            if c_iter.filter(|&c| c == &'.').count() == col.len() {
+                curr_col += expansion;
+                continue;
+            }
+            if c == &'#' {
+                galaxies.push((curr_col, curr_row));
+            }
+            curr_col += 1;
+        }
+        curr_col = 0;
+        curr_row += 1;
+    }
 
     // Get all combination paths
     let combinations = galaxies.iter().tuple_combinations().collect::<Vec<(&(usize, usize), &(usize, usize))>>();
 
-    let mut r = 0u64;
+    let mut r = 0i64;
     for pair in combinations {
         let (a, b) = pair;
-        // Expansion factor calculation
-        let mut include_expansion = 0u64;
-        for y_expanded in expanded_rows.clone() {
-            let y_to_compare = y_expanded + 1;
-            if y_to_compare > a.1 && y_to_compare < b.1 || y_to_compare > b.1 && y_to_compare < a.1 {
-                include_expansion += 1;
-            }
-        }
-        for x_expanded in expanded_cols.clone() {
-            let x_to_compare = x_expanded + 1;
-            if x_to_compare > a.0 && x_to_compare < b.0 || x_to_compare > b.0 && x_to_compare < a.0 {
-                include_expansion += 1;
-            }
-        }
-        let final_expansion = if include_expansion == 0 {
-            1
-        } else {
-            include_expansion * expansion_factor
-        };
+        let (x_a, y_a) = (a.0 as i64, a.1 as i64);
+        let (x_b, y_b) = (b.0 as i64, b.1 as i64);
 
-        println!("{:?} {}", pair, include_expansion);
+        let shortest_path = (x_b - x_a).abs() + (y_b - y_a).abs();
 
-        let shortest_path = astar(
-            a,
-            |p| get_successors(&expanded_map, p),
-            |p| {
-                let x: i32 = p.0 as i32;
-                let y: i32 = p.1 as i32;
-                ((x - b.0 as i32).abs() + (y - b.1 as i32).abs()) as u32
-            },
-            |p| *p == *b);
-
-        r += (shortest_path.unwrap().0.len() - 1) as u64 * final_expansion
+        r += shortest_path
     }
 
     Some(r)
@@ -194,6 +193,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(82000210));
     }
 }
