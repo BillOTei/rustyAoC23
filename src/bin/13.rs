@@ -24,6 +24,7 @@ pub fn part_one(input: &str) -> Option<usize> {
         if let Some(v_offset) = mirrored_at(&cols.as_columns()) {
             v = v_offset
         }
+
         if h > v {
             r += h
         } else {
@@ -31,36 +32,20 @@ pub fn part_one(input: &str) -> Option<usize> {
         }
     }
 
-    // let t: usize = maps_list.iter()
-    //     .map(|grid| {
-    //         // check horizontal
-    //         if let Some(i) = mirrored_at(grid) {
-    //             return i * 100;
-    //         }
-    //
-    //         // check vertical
-    //         let cols = (0..grid[0].len())
-    //             .map(|i| grid.iter().map(|row| row[i]).collect())
-    //             .collect();
-    //         if let Some(i) = mirrored_at(&cols) {
-    //             return i;
-    //         }
-    //
-    //         // no reflection found
-    //         0
-    //     })
-    //     .sum();
-
     Some(r)
 }
 
 fn mirrored_at(map: &Vec<Vec<char>>) -> Option<usize> {
-    (1..map.len()).find(|&offset| {
-        let half1 = map.iter().take(offset).rev();
-        let half2 = map.iter().skip(offset);
-        let mut combined = half1.zip(half2); // the shortest half determines how long this is!
-        combined.all(|(row1, row2)| row1 == row2)
-    })
+    for offset in 1..map.len() {
+        let (left, right) = map.split_at(offset);
+        let rev_left = left.iter().rev();
+        let mut combined = rev_left.zip(right); // the shortest half determines how long this is!
+        if combined.all(|(row1, row2)| row1 == row2) {
+            return Some(offset);
+        }
+    }
+
+    None
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
