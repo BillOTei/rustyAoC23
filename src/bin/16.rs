@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::collections::VecDeque;
 
 use array2d::Array2D;
+use itertools::Itertools;
 
 use advent_of_code::get_map;
 
@@ -16,22 +17,21 @@ pub fn part_one(input: &str) -> Option<usize> {
     let mut seen = HashSet::new();
     let current_point = Point { x: 0, y: 0, c: map.get(0, 0).unwrap().to_ascii_lowercase(), direction: Right };
     starts.push_back(current_point.clone());
-    seen.insert(Pos { x: current_point.x, y: current_point.y });
+    seen.insert(current_point);
 
     while let Some(start) = starts.pop_front() {
         let next_starts = do_move(start, &mut visited, &map);
         if next_starts.len() == 2 {
             for p in next_starts {
-                let pos = Pos { x: p.x, y: p.y };
-                if !seen.contains(&pos) {
-                    seen.insert(pos.clone());
+                if !seen.contains(&p) {
+                    seen.insert(p.clone());
                     starts.push_back(p.clone());
                 }
             }
         }
     }
 
-    Some(visited.len())
+    Some(visited.iter().sorted().len())
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -43,6 +43,7 @@ struct Point {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
+#[derive(Ord, PartialOrd)]
 struct Pos {
     x: usize,
     y: usize,
