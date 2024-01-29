@@ -131,8 +131,49 @@ enum Direction {
     Down,
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let map = get_map(input);
+    let last_y = map.row_len() - 1;
+    let last_x = map.column_len() - 1;
+    let mut all_starts = vec![];
+    let mut r = 0;
+    for (y, _) in map.as_rows().iter().enumerate() {
+        let current_point = Point { x: 0, y, c: map.get(y, 0).unwrap().to_ascii_lowercase(), direction: Right };
+        all_starts.push(current_point.clone());
+        let last_current = Point { x: last_x, y, c: map.get(y, last_x).unwrap().to_ascii_lowercase(), direction: Left };
+        all_starts.push(last_current.clone());
+    }
+    for (x, _) in map.as_columns().iter().enumerate() {
+        let current_point = Point { x, y: 0, c: map.get(0, x).unwrap().to_ascii_lowercase(), direction: Down };
+        all_starts.push(current_point.clone());
+        let last_current = Point { x, y: last_y, c: map.get(last_y, x).unwrap().to_ascii_lowercase(), direction: Up };
+        all_starts.push(last_current.clone());
+    }
+    for start_point in all_starts {
+        let mut visited = HashSet::new();
+        let mut starts: VecDeque<Point> = VecDeque::new();
+        let mut seen = HashSet::new();
+        starts.push_back(start_point.clone());
+        seen.insert(start_point);
+
+        while let Some(start) = starts.pop_front() {
+            let next_starts = do_move(start, &mut visited, &map);
+            if next_starts.len() == 2 {
+                for p in next_starts {
+                    if !seen.contains(&p) {
+                        seen.insert(p.clone());
+                        starts.push_back(p.clone());
+                    }
+                }
+            }
+        }
+
+        if visited.len() > r {
+            r = visited.len();
+        }
+    }
+
+    Some(r)
 }
 
 #[cfg(test)]
@@ -148,6 +189,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(51));
     }
 }
